@@ -970,6 +970,24 @@
 		<cfset Local.dateUtil	  = loadPOI("org.apache.poi.ss.usermodel.DateUtil") />
 		<cfset Local.dateColumns  = {} />
 		
+    <cfif Local.rowNum eq 0>
+      <!--- exported Spreadsheet doesn't have query column headers! --->
+      <cfset Local.theRow = createRow( Local.rowNum, false ) />
+        <cfset Local.cellNum = arguments.column - 1 />
+      <cfloop array="#Local.queryColumns#" index="Local.column">
+  
+        <cfset Local.cell   = createCell( Local.theRow, Local.cellNum, false ) />
+        <cfset Local.cell.setCellValue( JavaCast("string", Local.column.name ) ) />
+        <cfset Local.forceDefaultStyle = false />
+        <cfif structKeyExists(Local.column, "customCellStyle")>
+          <cfset Local.cell.setCellStyle( Local.column.customCellStyle ) />
+        <cfelseif structKeyExists(Local.column, "defaultCellStyle") AND Local.forceDefaultStyle>
+          <cfset Local.cell.setCellStyle( Local.column.defaultCellStyle ) />
+        </cfif>
+        <cfset Local.cellNum = Local.cellNum + 1 />
+      </cfloop>
+      <cfset Local.rowNum = Local.rowNum + 1 />    
+    </cfif>
 		<cfloop query="arguments.data">
 			<!--- can't just call addRow() here since that function expects a comma-delimited 
 					list of data (probably not the greatest limitation ...) and the query 
